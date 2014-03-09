@@ -15,7 +15,7 @@ function ObjectCollisionMonitor(game,opts){
 var proto = ObjectCollisionMonitor.prototype
 
 proto.pairKey = function(o1,o2){
-  return [o1.toString,o2.toString].sort()
+  return [o1.toString(),o2.toString()].sort()
 }
 
 proto.tick = function(dt){
@@ -29,8 +29,13 @@ proto.tick = function(dt){
 
     // o2
     for (var j=0; j<this.game.items.length; j++){
+      // this is a symmetric matrix, so ignore 
+      // the diagonal (self-self colisions don't make
+      // sense) and all of the lower diagonal elements
+      // to avoid repeat considerations
+      if (j<=i) continue 
+
       o2 = this.game.items[j]
-      if (o1===o2) continue
       if (!this.isCollidable(o2)) continue
 
       // check timeout for this pair
@@ -59,5 +64,11 @@ proto.collides = function(o1,o2){
   var aabb2 = o2.aabb()
   // var p2 = o2.position
   return aabb1.intersects(aabb2)
+}
+
+// ignore interations betwen o1 and o2 for the specified 
+// amount of time
+proto.ignoreCollisions = function(duration,o1,o2){
+  this.previous_collisions[this.pairKey(o1,o2)] = Date.now()+duration
 }
 
