@@ -19,7 +19,7 @@ proto.pairKey = function(o1,o2){
 }
 
 proto.tick = function(dt){
-  var o1,o2,pairkey,prev
+  var o1,o2,pairkey,prev,now,delta
   // check n^2 game items for overlap
 
   // o1
@@ -41,11 +41,13 @@ proto.tick = function(dt){
       // check timeout for this pair
       pairkey = this.pairKey(o1,o2)
       prev = this.previous_collisions[pairkey] || 0
-      if (Date.now()-prev > this.timeout){
+      now = Date.now()
+      delta = now-prev
+      if (delta > this.timeout){
         // collision?
         if (this.collides(o1,o2)){
-          this.game.emit('object-collision',o1,o2)
           this.previous_collisions[pairkey] = Date.now()
+          this.game.emit('object-collision',o1,o2)
         }
       }
 
@@ -66,9 +68,10 @@ proto.collides = function(o1,o2){
   return aabb1.intersects(aabb2)
 }
 
-// ignore interations betwen o1 and o2 for the specified 
-// amount of time
+// Ignore interations betwen o1 and o2 for the specified 
+// amount of time. Duration overrides the default timeout.
 proto.ignoreCollisions = function(duration,o1,o2){
-  this.previous_collisions[this.pairKey(o1,o2)] = Date.now()+duration
+  var adjusted_ts = Date.now() - this.timeout + duration
+  this.previous_collisions[this.pairKey(o1,o2)] = adjusted_ts
 }
 
