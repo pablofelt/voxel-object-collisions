@@ -10,6 +10,7 @@ function ObjectCollisionMonitor(game,opts){
   this.game.addItem(this)
   this.timeout = opts.timeout || 0
   this.previous_collisions = {}
+  this.ignore_objects = {}
 }
 
 var proto = ObjectCollisionMonitor.prototype
@@ -50,22 +51,25 @@ proto.tick = function(dt){
           this.game.emit('object-collision',o1,o2)
         }
       }
-
       
-    }
-  } // end for
+    } // end for o2
+  } // end for o1
 }
 
 proto.isCollidable = function(object){
-  return 'position' in object && 'aabb' in object
+  return 'position' in object 
+    && 'aabb' in object 
+    && !(object in this.ignore_objects)
 }
 
 proto.collides = function(o1,o2){
   var aabb1 = o1.aabb()
-  // var p1 = o1.position
   var aabb2 = o2.aabb()
-  // var p2 = o2.position
   return aabb1.intersects(aabb2)
+}
+
+proto.ignoreObject = function(object){
+  this.ignore_objects[object] = true
 }
 
 // Ignore interations betwen o1 and o2 for the specified 
